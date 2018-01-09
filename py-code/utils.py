@@ -6,6 +6,7 @@ Utilities for radio galaxies detection
 
 import os
 import numpy as np
+import pandas as pd
 from astropy.io import fits
 
 def load_fits(filepath):
@@ -49,3 +50,41 @@ def combine_fits(filelist):
     hdu.header["PATH"] = os.path.realpath('./')
 
     return hdu
+
+def getOrderedDict(keys,keysid):
+    """Get ordered dict"""
+    from collections import OrderedDict
+    d = OrderedDict()
+    for i in keysid:
+        d[keys[i]] = []
+    return d
+
+def getPSdict():
+    """Output PS dict according to given typecode
+    1 - FRI, 2 - FRII, 3 - RQQ, 4 - SF, 5 - SB
+    """
+    keys = ["redshift","x","y","flux","major","minor","pa","x_l1","y_l1","flux_l1",
+            "major_l1","minor_l1","x_l2","y_l2","flux_l2","major_l2","minor_l2",
+            "x_h1","y_h1","flux_h1","x_h2","y_h2","flux_h2"]
+    ps = {"1": None, "2": None, "3": None, "4": None, "5": None}
+    id_dict = {"1": [0,1,2,3,7,8,9,10,11,12,13,14,15,16],
+               "2": [0,1,2,3,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
+               "3": [0,1,2,3],
+               "4": [0,1,2,3,4,5,6],
+               "5": [0,1,2,3,4,5,6]}
+    for key in ps.keys():
+        ps[key] = getOrderedDict(keys=keys,keysid=id_dict[key])
+    
+    return ps
+
+def getPSparam(psline,typedict):
+    "get ps parameters"
+    # split
+    psparams = np.array(psline[0:-1].split(","))
+    # remove " "
+    psparams = psparams[psparams != ""]
+    # update typedict
+    for i,key in enumerate(typedict.keys()):
+        typedict[key].append(float(psparams[i+1]))
+    
+    return typedict
