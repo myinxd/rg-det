@@ -88,3 +88,33 @@ def getPSparam(psline,typedict):
         typedict[key].append(float(psparams[i+1]))
     
     return typedict
+
+def getRegion(pstype,psparam):
+    """Generate ds9 style region list"""
+    if pstype == 1 or pstype == 2:
+        id_l1 = np.array([7,6,9,10,11])
+        id_l2 = np.array([13,12,15,16,17])
+        reg1 = "ellipse(" + ",".join(psparam[id_l1].astype(str)) + ")\n"
+        reg2 = "ellipse(" + ",".join(psparam[id_l2].astype(str)) + ")\n"
+        reg = reg1+reg2
+    elif pstype == 3:
+        idx = [2,1]
+        reg = "circle(" + ",".join(psparam[idx].astype(str)) + ", 1.0)\n"
+    elif pstype == 4 or pstype == 5:
+        idx = [2,1,4,5,6]
+        reg = "ellipse(" + ",".join(psparam[idx].astype(str)) + ")\n"
+    else:
+        reg = None
+    
+    return reg
+
+def writeRegion(pstype,psparam,idx_type,savepath):
+    """Write ps list to region files."""
+    with open(savepath, 'w') as fp:
+        # ds9 style header
+        fp.write('# Region file format: DS9 version 4.1\n')
+        fp.write('global color=red dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1\n')
+        fp.write('image\n')
+        for i in idx_type:
+            reg = getRegion(pstype[i],psparam[i,:])
+            fp.write(reg)
